@@ -111,6 +111,77 @@ bool Hasttable<keytype, valuetype>::find(const keytype& key, valuetype& value)co
     }
     return false;
 }
+template<typename keytype>
+class hashcounter {
+private:
+    int* counter;
+    int counterindex;
+    int countersize;
+    Hasttable<keytype, int>* hash;
+public:
+    hashcounter(int size = 256);
+    ~hashcounter();
+    void reset();
+    int add(const keytype& key);
+    int sub(const keytype& key);
+    int get(const keytype& key);
+
+};
+template<typename keytype>
+hashcounter< keytype>::hashcounter(int size) {
+    countersize = size;
+    counterindex = 0;
+    counter = new int[countersize];
+    hash = NULL;
+    reset();
+
+}
+template<typename keytype>
+hashcounter< keytype>::~hashcounter() {
+    delete[]counter;
+    if (hash) {
+        delete hash;
+        hash = NULL;
+    }
+}
+template<typename keytype>
+void hashcounter< keytype>::reset() {
+    if (hash) {
+        delete hash;
+        hash = NULL;
+
+    }
+    hash = new Hasttable<keytype, int>(countersize);
+    counterindex = 0;
+    for (int i = 0; i < countersize; i++) {
+        counter[i] = 0;
+    }
+}
+template<typename keytype>
+int hashcounter< keytype>::add(const keytype& key) {
+    int idx;
+    if (!hash->find(key, idx)) {
+        idx = counterindex++;
+        hash->insert(key, idx);
+    }
+    return ++counter[idx];
+}
+template<typename keytype>
+int hashcounter< keytype>::sub(const keytype& key) {
+    int idx;
+    if (hash->find(key, idx)) {
+        return --counter[idx];
+    }
+    return 0;
+}
+template<typename keytype>
+int hashcounter< keytype>::get(const keytype& key) {
+    int idx;
+    if (hash->find(key, idx)) {
+        return counter[idx];
+    }
+    return 0;
+}
 int main()
 {
     Hasttable<int, char>h(1000);
@@ -125,5 +196,13 @@ int main()
     if (h.find(4102012, val)) {
         cout << "410201 is find val is  " << val<<endl;
     }
+    hashcounter<long long>hs;
+    hs.add(14);
+    hs.add(14);
+    hs.add(14);
+    hs.add(14);
+    hs.add(14);
+    hs.sub(14);
+    cout << hs.get(14) << endl;
 }
 
